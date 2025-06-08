@@ -23,6 +23,7 @@ const fetchData = async () => {
       chartType: 2,
     };
 
+    console.log("Calling API to fetch Vacant Berth Data...");
     const response = await axios.post(
       "https://www.irctc.co.in/online-charts/api/vacantBerth",
       payload,
@@ -46,10 +47,11 @@ const fetchData = async () => {
       response.data.vbd &&
       response.data.vbd.length === 0
     ) {
+      console.log("No Vacant Berth Data Found!");
       return "No vacant berths found!";
     }
   } catch (err) {
-    console.error("API Error:", err.response?.data || err.message);
+    console.error("API Error for fetching Vacant Berth Data:", err.message);
     throw err;
   }
 };

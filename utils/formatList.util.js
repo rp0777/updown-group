@@ -1,9 +1,5 @@
 const formatList = (data) => {
-  // const vacantBerthsRaw = data.filter(
-  //   (item) =>
-  //     (item["from"] === "MMCT" || item["from"] === "BVI") &&
-  //     item["to"] !== "BVI"
-  // );
+  console.log("Formatting Vacant Berth Data...");
 
   const result = {};
   data.forEach((item) => {
