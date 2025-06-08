@@ -1,8 +1,25 @@
 const axios = require("axios");
+const puppeteer = require("puppeteer");
 const { formatList } = require("../utils/formatList.util");
 
 const fetchData = async () => {
   try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"], // Needed on some cloud platforms
+    });
+
+    const page = await browser.newPage();
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+    );
+
+    // Go to the chart page to simulate a real session
+    await page.goto("https://www.irctc.co.in/online-charts/traincomposition", {
+      waitUntil: "networkidle2",
+    });
+
     const journeyDate = new Date();
 
     const istDate = new Intl.DateTimeFormat("en-CA", {
@@ -14,38 +31,45 @@ const fetchData = async () => {
     }).format(journeyDate);
 
     const payload = {
-      trainNo: "22990",
-      boardingStation: "MHV",
-      remoteStation: "MHV",
-      trainSourceStation: "MHV",
+      trainNo: "12955",
+      boardingStation: "MMCT",
+      remoteStation: "MMCT",
+      trainSourceStation: "MMCT",
       jDate: istDate,
       cls: "SL",
       chartType: 2,
     };
 
-    console.log("Calling API to fetch Vacant Berth Data...");
-    const response = await axios.post(
-      "https://www.irctc.co.in/online-charts/api/vacantBerth",
-      payload,
-      {
-        headers: {
-          accept: "application/json",
-          "content-type": "application/json",
-          origin: "https://www.irctc.co.in",
-          referer: "https://www.irctc.co.in/online-charts/traincomposition",
-          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        },
-      }
-    );
+    const response = await page.evaluate(async (payload) => {
+      const res = await fetch(
+        "https://www.irctc.co.in/online-charts/api/vacantBerth",
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-    if (response.data && response.data.vbd && response.data.vbd.length > 0) {
-      const formattedBerths = formatList(response.data.vbd);
+      if (!res.ok) {
+        return { error: `Failed with status ${res.status}` };
+      }
+
+      return await res.json();
+    }, payload);
+
+    await browser.close();
+
+    if (response && response.vbd && response.vbd.length > 0) {
+      const formattedBerths = formatList(response.vbd);
 
       return formattedBerths;
     } else if (
-      response.data &&
-      response.data.vbd &&
-      response.data.vbd.length === 0
+      response &&
+      response.vbd &&
+      response.vbd.length === 0
     ) {
       console.log("No Vacant Berth Data Found!");
       return "No vacant berths found!";
