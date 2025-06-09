@@ -10,8 +10,8 @@ const runVacantBerthJob = async () => {
     const journeyDate = new Date();
 
     const istDate = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/Los_Angeles",
-      // timeZone: "Asia/Kolkata",
+      // timeZone: "America/Los_Angeles",
+      timeZone: "Asia/Kolkata",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -23,7 +23,7 @@ const runVacantBerthJob = async () => {
         to: process.env.EMAIL_TO,
         subject: `Jaipur SuperFast Vacant Seats for Date ${istDate}`,
         text: data,
-        html: `<p>Below Seats are vacant in train MMCT JAIPUR SF (12922) </p><pre>${data}</pre>`,
+        html: `<p>Below Seats are vacant in train MMCT JAIPUR SF (12955) </p><pre>${data}</pre>`,
       });
       console.log("📧 Email sent successfully!");
     } catch (error) {
