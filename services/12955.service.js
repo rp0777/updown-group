@@ -5,8 +5,13 @@ const { formatList } = require("../utils/formatList.util");
 const fetchData = async () => {
   try {
     const browser = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        "--disable-dev-shm-usage", // Important for limited memory environments
+        "--single-process", // May help in memory-constrained environments
+      ],
+      executablePath: await chromium.executablePath(),
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"], // Needed on some cloud platforms
     });
 
     const page = await browser.newPage();
@@ -66,11 +71,7 @@ const fetchData = async () => {
       const formattedBerths = formatList(response.vbd);
 
       return formattedBerths;
-    } else if (
-      response &&
-      response.vbd &&
-      response.vbd.length === 0
-    ) {
+    } else if (response && response.vbd && response.vbd.length === 0) {
       console.log("No Vacant Berth Data Found!");
       return "No vacant berths found!";
     }
