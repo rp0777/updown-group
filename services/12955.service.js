@@ -1,28 +1,31 @@
-const axios = require("axios");
-const puppeteer = require("puppeteer");
 const { formatList } = require("../utils/formatList.util");
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 
 const fetchData = async () => {
+  let browser;
   try {
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       args: [
         ...chromium.args,
-        "--disable-dev-shm-usage", // Important for limited memory environments
-        "--single-process", // May help in memory-constrained environments
+        '--disable-dev-shm-usage',
+        '--single-process',
+        '--no-zygote',
+        '--no-sandbox'
       ],
-      executablePath: await chromium.executablePath(),
+      executablePath: process.env.CHROME_EXECUTABLE_PATH || await chromium.executablePath(),
       headless: true,
+      timeout: 30000
     });
 
     const page = await browser.newPage();
-
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     );
 
-    // Go to the chart page to simulate a real session
-    await page.goto("https://www.irctc.co.in/online-charts/traincomposition", {
-      waitUntil: "networkidle2",
+    await page.goto('https://www.irctc.co.in/online-charts/traincomposition', {
+      waitUntil: 'networkidle2',
+      timeout: 60000
     });
 
     const journeyDate = new Date();
@@ -40,7 +43,8 @@ const fetchData = async () => {
       boardingStation: "MMCT",
       remoteStation: "MMCT",
       trainSourceStation: "MMCT",
-      jDate: istDate,
+      // jDate: istDate,
+      jDate: "2025-06-09",
       cls: "SL",
       chartType: 2,
     };
